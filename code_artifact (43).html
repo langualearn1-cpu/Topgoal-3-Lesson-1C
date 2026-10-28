@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار اللغة الإنجليزية التفاعلي - Worksheet Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wood-light: #f6d397;
+            --wood-dark: #d9a05b;
+            --orange-badge: #d95f18;
+            --green-badge: #6f8f3c;
+            --row-bg: #fdf5dc;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at top, #fffbeb 0%, #f3efe0 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .en-text {
+            font-family: 'Fredoka', sans-serif;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* Worksheet Wooden Banner Style */
+        .wood-banner {
+            background: linear-gradient(180deg, #f9dca4 0%, #eabf7e 50%, #dfac64 100%);
+            border: 3px solid #3e2723;
+            border-radius: 12px;
+            box-shadow: 0 4px 0 #3e2723, inset 0 2px 0 rgba(255,255,255,0.6);
+            position: relative;
+        }
+
+        .clipboard-badge {
+            background: #ffffff;
+            border: 3px solid #3e2723;
+            border-radius: 8px;
+            box-shadow: -3px 4px 0 #6f8f3c;
+            transform: rotate(-4deg);
+        }
+
+        /* Hand-drawn Circle Effect for Q2 ("ضع دائرة حول الإجابة الصحيحة") */
+        .option-btn {
+            position: relative;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            white-space: nowrap;
+            width: fit-content;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(217, 95, 24, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .circle-svg {
+            position: absolute;
+            inset: -6px -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 12px);
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .option-btn.selected .circle-svg {
+            opacity: 1;
+        }
+
+        /* Only animate the circle on the newly clicked option so previous circles never move */
+        .option-btn.animate-circle .circle-path {
+            stroke-dasharray: 450;
+            stroke-dashoffset: 450;
+            animation: drawCircle 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes drawCircle {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Word Bank Pill Style */
+        .word-pill {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .word-pill:hover:not(.used):not(:disabled) {
+            transform: translateY(-2px) scale(1.03);
+        }
+        .word-pill.active-word {
+            ring: 4px;
+            box-shadow: 0 0 0 4px rgba(217, 95, 24, 0.45);
+            transform: scale(1.06);
+        }
+        .word-pill.used {
+            opacity: 0.38;
+            text-decoration: line-through;
+            transform: scale(0.95);
+        }
+
+        /* Blank Slot Style */
+        .blank-slot {
+            min-width: 150px;
+            border-bottom: 3px dotted #b45309;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 12px;
+            margin: 0 6px;
+        }
+        .blank-slot.filled {
+            border-bottom: 3px solid #d95f18;
+            background-color: #fff7ed;
+            border-radius: 8px 8px 0 0;
+            color: #c2410c;
+            font-weight: 700;
+        }
+
+        /* Missing Letter Input Box - Crisp Rounded Squares on a Single Line */
+        .letter-input {
+            width: 2rem;
+            height: 2.25rem;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: 2px solid #d97706;
+            border-radius: 8px;
+            background: #fffbeb;
+            color: #b45309;
+            text-transform: lowercase;
+            transition: all 0.15s ease;
+            padding: 0;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .letter-input.has-value {
+            background: #ffedd5;
+            border-color: #ea580c;
+            color: #9a3412;
+        }
+
+        .letter-input:focus {
+            outline: none;
+            border-color: #ea580c;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .letter-static {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            padding: 0 1px;
+            flex-shrink: 0;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* Proportionally scaled variant for 10-letter words (journalist, storyboard) so they fit on 1 line */
+        .word-long .letter-input {
+            width: 1.55rem;
+            height: 2rem;
+            font-size: 1.05rem;
+            border-radius: 7px;
+        }
+
+        .word-long .letter-static {
+            font-size: 1.1rem;
+            padding: 0;
+        }
+
+        /* Audio Pulse Animation */
+        .speaking-pulse {
+            animation: pulseRing 1.2s infinite;
+        }
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Top Sticky Progress & Header Bar -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-amber-200 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+                    EN
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-extrabold text-gray-800">الاختبار التفاعلي للغة الإنجليزية</h1>
+                    <p id="quizStatusNotice" class="text-xs md:text-sm text-amber-700 font-semibold flex items-center gap-1">
+                        <span>🔒</span>
+                        <span>الإجابات والقراءة الصوتية مخفية حتى الانتهاء من حل الاختبار</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Live Completion Progress (Does NOT show score until submitted) -->
+            <div class="flex items-center gap-4 mr-auto md:mr-0">
+                <div class="text-left">
+                    <div class="flex items-center justify-between text-xs font-bold text-gray-600 mb-1">
+                        <span>نسبة الإنجاز</span>
+                        <span id="progressCounter">0 / 23</span>
+                    </div>
+                    <div class="w-36 md:w-48 h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                        <div id="progressBar" class="h-full bg-gradient-to-r from-amber-500 to-orange-600 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Timer badge -->
+                <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-amber-900 font-bold text-sm">
+                    <span>⏱️</span>
+                    <span id="timerDisplay" class="en-text">00:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pt-6 space-y-10">
+
+        <!-- SCOREBOARD PANEL (Hidden until quiz is submitted) -->
+        <section id="scoreboardSection" class="hidden">
+            <div class="bg-white rounded-3xl border-4 border-amber-500 shadow-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-6 py-5 text-white flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-4xl">🏆</span>
+                        <div>
+                            <h2 class="text-2xl font-extrabold">لوحة الدرجات النهائية (Scoreboard)</h2>
+                            <p class="text-amber-100 text-sm">تم تصحيح الاختبار وتفعيل قراءة الإجابات الصحيحة!</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="readAllBtn" onclick="readAllAnswersAloud()" class="bg-white text-orange-700 hover:bg-amber-50 font-extrabold px-4 py-2.5 rounded-xl shadow flex items-center gap-2 transition active:scale-95">
+                            <span id="readAllIcon">🔊</span>
+                            <span id="readAllText">قراءة جميع الإجابات الصحيحة</span>
+                        </button>
+                        <button id="stopSpeechBtn" onclick="stopAllSpeech()" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2.5 rounded-xl shadow transition">
+                            ⏹️ إيقاف القراءة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Main Score & Grade -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-amber-300 rounded-2xl p-4 text-center flex flex-col justify-center">
+                            <span class="text-sm font-bold text-amber-800">الدرجة الكلية</span>
+                            <div class="text-4xl font-black text-orange-600 my-1 en-text text-center" id="totalScoreText">0 / 23</div>
+                            <span id="percentageBadge" class="inline-block mx-auto px-3 py-0.5 rounded-full text-xs font-extrabold bg-orange-600 text-white">0%</span>
+                        </div>
+
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-center">
+                            <span class="text-sm font-bold text-blue-900">السؤال الثاني (اختر)</span>
+                            <div class="text-2xl font-extrabold text-blue-700 my-1 en-text text-center" id="q2ScoreText">0 / 8</div>
+                            <span class="text-xs text-blue-600 font-semibold">Choose the correct answer</span>
+                        </div>
+
+                        <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 text-center">
+                            <span class="text-sm font-bold text-emerald-900">السؤال الثالث (الفراغات)</span>
+                            <div class="text-2xl font-extrabold text-emerald-700 my-1 en-text text-center" id="q3ScoreText">0 / 8</div>
+                            <span class="text-xs text-emerald-600 font-semibold">Complete the sentences</span>
+                        </div>
+
+                        <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
+                            <span class="text-sm font-bold text-purple-900">السؤال الرابع (الحروف)</span>
+                            <div class="text-2xl font-extrabold text-purple-700 my-1 en-text text-center" id="q4ScoreText">0 / 7</div>
+                            <span class="text-xs text-purple-600 font-semibold">Missing letters</span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Banner & Retake -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                        <div class="flex items-center gap-3">
+                            <div id="gradeEmoji" class="text-3xl">🌟</div>
+                            <div>
+                                <h3 id="gradeTitle" class="font-extrabold text-gray-800 text-lg">أحسنت!</h3>
+                                <p id="gradeSubtitle" class="text-sm text-gray-600">يمكنك الآن مراجعة إجاباتك بالأسفل والاستماع لنطق كل جملة وكلمة عبر زر السماعة 🔊.</p>
+                            </div>
+                        </div>
+                        <button onclick="resetQuiz()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold px-5 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                            <span>🔄</span>
+                            <span>إعادة حل الاختبار</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- QUESTION 2: Choose the correct answer (ضع دائرة)         -->
+        <!-- ======================================================= -->
+        <section class="bg-white rounded-3xl shadow-md border-2 border-amber-200 p-5 md:p-8">
+            <!-- Section Header matching Worksheet -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3" dir="ltr">
+                    <div class="clipboard-badge w-12 h-14 flex flex-col items-center justify-center font-black text-2xl text-gray-800 en-text">
+                        <div class="w-5 h-1.5 bg-amber-600 rounded-full mb-0.5"></div>
+                        2
+                    </div>
+                    <div class="wood-banner px-6 py-2.5">
+                        <h2 class="text-lg md:text-xl font-extrabold text-gray-900 en-text">Choose the correct answer</h2>
+                    </div>
+                </div>
+                <div class="bg-orange-50 border border-orange-200 text-orange-900 px-4 py-1.5 rounded-xl text-sm font-bold">
+                    ⭕ السؤال الثاني: ضع دائرة حول الإجابة الصحيحة
+                </div>
+            </div>
+
+            <!-- Q2 Items Container -->
+            <div id="q2Container" class="space-y-5" dir="ltr"></div>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- QUESTION 3: Complete the sentences (صندوق الكلمات)        -->
+        <!-- ======================================================= -->
+        <section class="bg-white rounded-3xl shadow-md border-2 border-amber-200 p-5 md:p-8">
+            <!-- Section Header -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3" dir="ltr">
+                    <div class="clipboard-badge w-12 h-14 flex flex-col items-center justify-center font-black text-2xl text-gray-800 en-text">
+                        <div class="w-5 h-1.5 bg-amber-600 rounded-full mb-0.5"></div>
+                        3
+                    </div>
+                    <div class="wood-banner px-6 py-2.5">
+                        <h2 class="text-lg md:text-xl font-extrabold text-gray-900 en-text">Complete the sentences.</h2>
+                    </div>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-1.5 rounded-xl text-sm font-bold">
+                    📥 السؤال الثالث: ضع الكلمة في الفراغ المناسب من صندوق الكلمات
+                </div>
+            </div>
+
+            <!-- Instructions helper in Arabic -->
+            <p class="text-xs md:text-sm text-gray-600 mb-3 font-semibold">
+                💡 طريقة الحل: اضغط على الكلمة من <strong>صندوق الكلمات (Word Bank)</strong> ثم اضغط على الفراغ المناسب لوضعها فيه (أو اضغط على الفراغ مباشرة لاختيار الكلمة).
+            </p>
+
+            <!-- Word Bank Box (Matches worksheet green bordered box) -->
+            <div class="sticky top-20 z-30 bg-white/95 backdrop-blur border-2 border-[#6f8f3c] rounded-2xl p-4 mb-6 shadow-sm" dir="ltr">
+                <div class="flex flex-wrap items-center justify-center gap-2.5" id="wordBankContainer">
+                    <span class="font-extrabold text-red-600 en-text mr-1">Word Bank :</span>
+                    <!-- Word pills injected via JS -->
+                </div>
+            </div>
+
+            <!-- Q3 Sentences Container -->
+            <div id="q3Container" class="space-y-3.5" dir="ltr"></div>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- QUESTION 4: Complete the missing letters (الحرف الناقص)  -->
+        <!-- ======================================================= -->
+        <section class="bg-white rounded-3xl shadow-md border-2 border-amber-200 p-5 md:p-8">
+            <!-- Section Header -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3" dir="ltr">
+                    <div class="clipboard-badge w-12 h-14 flex flex-col items-center justify-center font-black text-2xl text-gray-800 en-text">
+                        <div class="w-5 h-1.5 bg-amber-600 rounded-full mb-0.5"></div>
+                        4
+                    </div>
+                    <div class="wood-banner px-6 py-2.5">
+                        <h2 class="text-lg md:text-xl font-extrabold text-gray-900 en-text">Complete the missing letters.</h2>
+                    </div>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 text-purple-900 px-4 py-1.5 rounded-xl text-sm font-bold">
+                    🔤 السؤال الرابع: أوجد الحرف الناقص لكل كلمة
+                </div>
+            </div>
+
+            <p class="text-xs md:text-sm text-gray-600 mb-5 font-semibold">
+                💡 اكتب الحرف الإنجليزي الناقص في كل مربع صغير لإكمال الكلمة المعبرة عن الصورة.
+            </p>
+
+            <!-- Q4 Cards Grid -->
+            <div id="q4Container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" dir="ltr"></div>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- SUBMIT / FINISH QUIZ ACTION AREA                        -->
+        <!-- ======================================================= -->
+        <div id="submitBar" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-6 shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl">
+                    📝
+                </div>
+                <div>
+                    <h3 class="text-xl font-extrabold">هل انتهيت من حل جميع الأسئلة؟</h3>
+                    <p class="text-amber-100 text-sm">عند الضغط على زر الاعتماد، ستظهر لوحة الدرجات النهائية وتُقرأ الإجابات الصحيحة صوتياً.</p>
+                </div>
+            </div>
+            <button onclick="handleQuizSubmitClick()" class="w-full md:w-auto bg-white text-orange-700 hover:bg-amber-50 font-black text-lg px-8 py-4 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2">
+                <span>✅</span>
+                <span>اعتماد الإجابات وعرض الدرجة</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Custom Confirmation Modal for Incomplete Answers (No native alert/confirm) -->
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 text-center space-y-4">
+            <div class="w-16 h-16 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl">
+                ⚠️
+            </div>
+            <h3 class="text-xl font-extrabold text-gray-800">تنبيه قبل تسليم الاختبار</h3>
+            <p id="confirmModalText" class="text-gray-600 text-sm leading-relaxed">
+                لديك بعض الأسئلة غير المحلولة. هل ترغب في إكمالها أولاً أم تسليم الاختبار الآن وعرض النتيجة؟
+            </p>
+            <div class="flex items-center justify-center gap-3 pt-2">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition">
+                    العودة لإكمال الحل
+                </button>
+                <button onclick="finalizeSubmission()" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow transition">
+                    تسليم وعرض النتيجة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Picker Modal for Mobile/Quick Blank Selection -->
+    <div id="wordPickerModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-2 border-emerald-400">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-extrabold text-lg text-gray-800">اختر الكلمة المناسبة للفراغ رقم <span id="pickerTargetNum" class="text-orange-600"></span></h3>
+                <button onclick="closeWordPickerModal()" class="text-gray-400 hover:text-gray-700 text-xl font-bold px-2">✕</button>
+            </div>
+            <div id="modalWordList" class="flex flex-wrap gap-2.5 justify-center py-3" dir="ltr"></div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="clearBlankFromModal()" class="text-xs font-bold text-red-600 hover:underline">مسح الكلمة من هذا الفراغ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==============================================================
+           QUIZ DATA (100% Faithful to Uploaded Worksheet Images)
+           ============================================================== */
+
+        // Question 2: Choose the correct answer (8 items)
+        const q2Data = [
+            {
+                id: 1,
+                promptBefore: "«Yes, I ",
+                promptAfter: " with you.»",
+                options: [
+                    { key: "a", text: "away" },
+                    { key: "b", text: "glass" },
+                    { key: "c", text: "minute" },
+                    { key: "d", text: "agree" }
+                ],
+                correctKey: "d",
+                fullSentence: "Yes, I agree with you."
+            },
+            {
+                id: 2,
+                promptBefore: "I can't talk ",
+                promptAfter: ". I'm studying.",
+                options: [
+                    { key: "a", text: "at the moment" },
+                    { key: "b", text: "last name" },
+                    { key: "c", text: "no problem" },
+                    { key: "d", text: "cookie" }
+                ],
+                correctKey: "a",
+                fullSentence: "I can't talk at the moment. I'm studying."
+            },
+            {
+                id: 3,
+                promptBefore: "Please drink a ",
+                promptAfter: " of water.",
+                options: [
+                    { key: "a", text: "taxi" },
+                    { key: "b", text: "gate" },
+                    { key: "c", text: "glass" },
+                    { key: "d", text: "helmet" }
+                ],
+                correctKey: "c",
+                fullSentence: "Please drink a glass of water."
+            },
+            {
+                id: 4,
+                promptBefore: "The dog is angry. Please ",
+                promptAfter: ".",
+                options: [
+                    { key: "a", text: "go away" },
+                    { key: "b", text: "agree" },
+                    { key: "c", text: "in a minute" },
+                    { key: "d", text: "last name" }
+                ],
+                correctKey: "a",
+                fullSentence: "The dog is angry. Please go away."
+            },
+            {
+                id: 5,
+                promptBefore: "You can come with us ",
+                promptAfter: ".",
+                options: [
+                    { key: "a", text: "cookie" },
+                    { key: "b", text: "glass" },
+                    { key: "c", text: "if you want" },
+                    { key: "d", text: "gate" }
+                ],
+                correctKey: "c",
+                fullSentence: "You can come with us if you want."
+            },
+            {
+                id: 6,
+                promptBefore: "I'll be ready ",
+                promptAfter: ".",
+                options: [
+                    { key: "a", text: "agree" },
+                    { key: "b", text: "in a minute" },
+                    { key: "c", text: "tie" },
+                    { key: "d", text: "taxi" }
+                ],
+                correctKey: "b",
+                fullSentence: "I'll be ready in a minute."
+            },
+            {
+                id: 7,
+                promptBefore: "Write your ",
+                promptAfter: " here.",
+                options: [
+                    { key: "a", text: "last name" },
+                    { key: "b", text: "helmet" },
+                    { key: "c", text: "glass" },
+                    { key: "d", text: "cookie" }
+                ],
+                correctKey: "a",
+                fullSentence: "Write your last name here."
+            },
+            {
+                id: 8,
+                promptBefore: "«Can you help me?» «",
+                promptAfter: ".»",
+                options: [
+                    { key: "a", text: "At the moment" },
+                    { key: "b", text: "Go away" },
+                    { key: "c", text: "No problem" },
+                    { key: "d", text: "Last name" }
+                ],
+                correctKey: "c",
+                fullSentence: "Can you help me? No problem."
+            }
+        ];
+
+        // Question 3: Complete the sentences with Word Bank (8 items)
+        const wordBankList = [
+            "agree",
+            "at the moment",
+            "glass",
+            "go away",
+            "if you want",
+            "in a minute",
+            "last name",
+            "no problem"
+        ];
+
+        const q3Data = [
+            {
+                id: 1,
+                before: "Can I have a",
+                after: "of milk?",
+                correctWord: "glass",
+                fullSentence: "Can I have a glass of milk?"
+            },
+            {
+                id: 2,
+                before: "I can't play",
+                after: "because I'm doing my homework.",
+                correctWord: "at the moment",
+                fullSentence: "I can't play at the moment because I'm doing my homework."
+            },
+            {
+                id: 3,
+                before: "Please write your",
+                after: "on the form.",
+                correctWord: "last name",
+                fullSentence: "Please write your last name on the form."
+            },
+            {
+                id: 4,
+                before: "I'll help you",
+                after: ".",
+                correctWord: "in a minute",
+                fullSentence: "I'll help you in a minute."
+            },
+            {
+                id: 5,
+                before: "You can borrow my pencil",
+                after: ".",
+                correctWord: "if you want",
+                fullSentence: "You can borrow my pencil if you want."
+            },
+            {
+                id: 6,
+                before: "«Thank you for helping me.»",
+                after: "",
+                correctWord: "no problem",
+                fullSentence: "Thank you for helping me. No problem."
+            },
+            {
+                id: 7,
+                before: "The teacher asked the noisy students to",
+                after: ".",
+                correctWord: "go away",
+                fullSentence: "The teacher asked the noisy students to go away."
+            },
+            {
+                id: 8,
+                before: "I",
+                after: "with my best friend.",
+                correctWord: "agree",
+                fullSentence: "I agree with my best friend."
+            }
+        ];
+
+        // Question 4: Complete the missing letters (7 items with bespoke SVG illustrations)
+        const q4Data = [
+            {
+                id: 1,
+                word: "cookie",
+                // Pattern in image: c _ _ k _ e
+                pattern: [
+                    { char: "c", missing: false },
+                    { char: "o", missing: true },
+                    { char: "o", missing: true },
+                    { char: "k", missing: false },
+                    { char: "i", missing: true },
+                    { char: "e", missing: false }
+                ],
+                badgeColor: "#d95f18",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <circle cx="75" cy="48" r="28" fill="#d99b52" stroke="#8c5828" stroke-width="2.5"/>
+                    <circle cx="68" cy="36" r="3.5" fill="#3e2723"/><circle cx="85" cy="42" r="4" fill="#3e2723"/>
+                    <circle cx="74" cy="55" r="3.5" fill="#3e2723"/><circle cx="88" cy="58" r="3" fill="#3e2723"/>
+                    <circle cx="46" cy="46" r="30" fill="#e6ab62" stroke="#8c5828" stroke-width="2.5"/>
+                    <circle cx="35" cy="34" r="4" fill="#3e2723"/><circle cx="52" cy="30" r="3.5" fill="#3e2723"/>
+                    <circle cx="44" cy="47" r="4.5" fill="#3e2723"/><circle cx="30" cy="52" r="3.5" fill="#3e2723"/>
+                    <circle cx="58" cy="56" r="4" fill="#3e2723"/><circle cx="42" cy="64" r="3.5" fill="#3e2723"/>
+                </svg>`
+            },
+            {
+                id: 2,
+                word: "gate",
+                // Pattern in image: g _ t _
+                pattern: [
+                    { char: "g", missing: false },
+                    { char: "a", missing: true },
+                    { char: "t", missing: false },
+                    { char: "e", missing: true }
+                ],
+                badgeColor: "#d95f18",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <rect x="8" y="25" width="18" height="55" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+                    <rect x="94" y="25" width="18" height="55" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+                    <rect x="6" y="20" width="22" height="6" fill="#d97706"/>
+                    <rect x="92" y="20" width="22" height="6" fill="#d97706"/>
+                    <path d="M26 32 Q60 15 94 32 L94 76 L26 76 Z" fill="none" stroke="#1f2937" stroke-width="3"/>
+                    <line x1="38" y1="27" x2="38" y2="76" stroke="#1f2937" stroke-width="2.5"/>
+                    <line x1="50" y1="24" x2="50" y2="76" stroke="#1f2937" stroke-width="2.5"/>
+                    <line x1="60" y1="23" x2="60" y2="76" stroke="#1f2937" stroke-width="3"/>
+                    <line x1="70" y1="24" x2="70" y2="76" stroke="#1f2937" stroke-width="2.5"/>
+                    <line x1="82" y1="27" x2="82" y2="76" stroke="#1f2937" stroke-width="2.5"/>
+                    <line x1="26" y1="54" x2="94" y2="54" stroke="#1f2937" stroke-width="2.5"/>
+                </svg>`
+            },
+            {
+                id: 3,
+                word: "helmet",
+                // Pattern in image: h _ l m _ t
+                pattern: [
+                    { char: "h", missing: false },
+                    { char: "e", missing: true },
+                    { char: "l", missing: false },
+                    { char: "m", missing: false },
+                    { char: "e", missing: true },
+                    { char: "t", missing: false }
+                ],
+                badgeColor: "#d95f18",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <path d="M25 58 C25 26, 95 26, 95 58 Z" fill="#facc15" stroke="#ca8a04" stroke-width="3"/>
+                    <path d="M52 28 L68 28 L72 56 L48 56 Z" fill="#fde047" opacity="0.7"/>
+                    <path d="M14 58 L104 58 C106 64, 95 66, 85 65 L18 65 C12 65, 10 61, 14 58 Z" fill="#eab308" stroke="#a16207" stroke-width="2.5"/>
+                </svg>`
+            },
+            {
+                id: 4,
+                word: "journalist",
+                // Pattern in image: j _ _ r n _ l _ s t
+                pattern: [
+                    { char: "j", missing: false },
+                    { char: "o", missing: true },
+                    { char: "u", missing: true },
+                    { char: "r", missing: false },
+                    { char: "n", missing: false },
+                    { char: "a", missing: true },
+                    { char: "l", missing: false },
+                    { char: "i", missing: true },
+                    { char: "s", missing: false },
+                    { char: "t", missing: false }
+                ],
+                badgeColor: "#d95f18",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <rect x="42" y="28" width="12" height="32" rx="4" transform="rotate(-35 48 44)" fill="#374151"/>
+                    <ellipse cx="34" cy="24" rx="11" ry="14" transform="rotate(-35 34 24)" fill="#111827"/>
+                    <circle cx="62" cy="54" r="9" fill="#f59e0b"/>
+                    <path d="M66 52 L105 72 L95 85 L58 60 Z" fill="#3b82f6"/>
+                </svg>`
+            },
+            {
+                id: 5,
+                word: "storyboard",
+                // Pattern in image: s t _ r _ b _ _ r d
+                pattern: [
+                    { char: "s", missing: false },
+                    { char: "t", missing: false },
+                    { char: "o", missing: true },
+                    { char: "r", missing: false },
+                    { char: "y", missing: true },
+                    { char: "b", missing: false },
+                    { char: "o", missing: true },
+                    { char: "a", missing: true },
+                    { char: "r", missing: false },
+                    { char: "d", missing: false }
+                ],
+                badgeColor: "#6f8f3c",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <rect x="16" y="14" width="88" height="62" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2.5"/>
+                    <rect x="24" y="22" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <rect x="50" y="22" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <rect x="76" y="22" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <rect x="24" y="46" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <rect x="50" y="46" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <rect x="76" y="46" width="20" height="16" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+                    <line x1="88" y1="68" x2="108" y2="48" stroke="#ea580c" stroke-width="4" stroke-linecap="round"/>
+                </svg>`
+            },
+            {
+                id: 6,
+                word: "taxi",
+                // Pattern in image: t _ x _
+                pattern: [
+                    { char: "t", missing: false },
+                    { char: "a", missing: true },
+                    { char: "x", missing: false },
+                    { char: "i", missing: true }
+                ],
+                badgeColor: "#6f8f3c",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <rect x="48" y="20" width="24" height="8" rx="2" fill="#1f2937"/>
+                    <text x="60" y="26.5" font-size="6" fill="#facc15" text-anchor="middle" font-weight="bold">TAXI</text>
+                    <path d="M26 46 L38 28 L82 28 L94 46 Z" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
+                    <path d="M40 31 L57 31 L57 44 L31 44 Z" fill="#bae6fd"/>
+                    <path d="M62 31 L79 31 L88 44 L62 44 Z" fill="#bae6fd"/>
+                    <rect x="14" y="45" width="92" height="22" rx="6" fill="#eab308" stroke="#a16207" stroke-width="2"/>
+                    <circle cx="34" cy="67" r="10" fill="#1f2937"/><circle cx="34" cy="67" r="4.5" fill="#9ca3af"/>
+                    <circle cx="86" cy="67" r="10" fill="#1f2937"/><circle cx="86" cy="67" r="4.5" fill="#9ca3af"/>
+                </svg>`
+            },
+            {
+                id: 7,
+                word: "tie",
+                // Pattern in image: t _ e
+                pattern: [
+                    { char: "t", missing: false },
+                    { char: "i", missing: true },
+                    { char: "e", missing: false }
+                ],
+                badgeColor: "#6f8f3c",
+                svg: `<svg viewBox="0 0 120 90" class="w-28 h-24 mx-auto">
+                    <polygon points="48,14 72,14 66,28 54,28" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+                    <polygon points="54,28 66,28 74,66 60,80 46,66" fill="#1d4ed8" stroke="#172554" stroke-width="2"/>
+                    <line x1="52" y1="38" x2="68" y2="46" stroke="#93c5fd" stroke-width="2.5"/>
+                    <line x1="50" y1="50" x2="70" y2="60" stroke="#93c5fd" stroke-width="2.5"/>
+                    <line x1="48" y1="62" x2="66" y2="71" stroke="#93c5fd" stroke-width="2.5"/>
+                </svg>`
+            }
+        ];
+
+        /* ==============================================================
+           STATE MANAGEMENT
+           ============================================================== */
+        let userQ2Answers = {}; // { qId: 'a'|'b'|'c'|'d' }
+        let userQ3Answers = {}; // { qId: 'word' }
+        let userQ4Answers = {}; // { qId: { charIndex: 'letter' } }
+        let selectedWordFromBank = null;
+        let currentModalBlankId = null;
+        let lastAnimatedQ2Id = null; // Tracks only the question just clicked so other circles stay static
+        let isQuizSubmitted = false;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let speechQueueActive = false;
+
+        /* ==============================================================
+           INITIALIZATION & RENDERING
+           ============================================================== */
+        window.onload = function () {
+            initQuizState();
+            renderAllSections();
+            startTimer();
+        };
+
+        function initQuizState() {
+            userQ2Answers = {};
+            userQ3Answers = {};
+            userQ4Answers = {};
+            q4Data.forEach(item => {
+                userQ4Answers[item.id] = {};
+            });
+            selectedWordFromBank = null;
+            lastAnimatedQ2Id = null;
+            isQuizSubmitted = false;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            updateTimerUI();
+            timerInterval = setInterval(() => {
+                if (!isQuizSubmitted) {
+                    timerSeconds++;
+                    updateTimerUI();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+            const secs = String(timerSeconds % 60).padStart(2, '0');
+            document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+        }
+
+        function renderAllSections() {
+            renderQ2();
+            renderWordBank();
+            renderQ3();
+            renderQ4();
+            updateProgressUI();
+        }
+
+        /* --------------------------------------------------------------
+           RENDER SECTION 2: Choose the correct answer (ضع دائرة)
+           -------------------------------------------------------------- */
+        function createQ2RowHTML(item, animateThisRow = false) {
+            const chosen = userQ2Answers[item.id];
+            const isCorrect = isQuizSubmitted && chosen === item.correctKey;
+
+            let blankDisplay = '<span class="inline-block min-w-[75px] border-b-2 border-amber-700/60 mx-1"></span>';
+            if (chosen) {
+                const chosenObj = item.options.find(o => o.key === chosen);
+                blankDisplay = `<span class="px-2.5 py-0.5 mx-1 rounded-lg bg-orange-100 text-orange-800 font-bold underline decoration-2">${chosenObj.text}</span>`;
+            }
+
+            // Options HTML with SVG hand-drawn circle
+            const optionsHtml = item.options.map(opt => {
+                const isSelected = chosen === opt.key;
+                const isThisCorrectOption = isQuizSubmitted && opt.key === item.correctKey;
+
+                let circleStroke = "#d95f18"; // orange pen during quiz
+                if (isQuizSubmitted) {
+                    if (isThisCorrectOption) circleStroke = "#059669"; // green circle on correct
+                    else if (isSelected && !isThisCorrectOption) circleStroke = "#dc2626"; // red on wrong
+                }
+
+                const showCircle = isSelected || isThisCorrectOption;
+                // Only animate if this specific question was just clicked
+                const shouldAnimate = animateThisRow && isSelected && !isQuizSubmitted;
+
+                return `
+                    <div class="flex items-center">
+                        <button
+                            type="button"
+                            ${isQuizSubmitted ? 'disabled' : `onclick="selectQ2Option(${item.id}, '${opt.key}')"`}
+                            class="option-btn inline-flex items-center gap-2.5 text-left group ${showCircle ? 'selected' : ''} ${shouldAnimate ? 'animate-circle' : ''}"
+                        >
+                            <span class="w-7 h-7 rounded-full bg-[#6f8f3c] text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+                                ${opt.key}
+                            </span>
+                            <span class="text-base md:text-lg font-semibold text-gray-800 en-text whitespace-nowrap">
+                                ${opt.text}
+                            </span>
+
+                            <!-- Hand-drawn Circle SVG around the chosen answer -->
+                            <svg class="circle-svg" viewBox="0 0 180 56" preserveAspectRatio="none">
+                                <path
+                                    class="circle-path"
+                                    d="M 14,28 C 14,9 166,7 168,28 C 170,48 20,51 12,29 C 8,18 38,11 62,11"
+                                    fill="none"
+                                    stroke="${circleStroke}"
+                                    stroke-width="3.2"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Post-submission review & Audio button (Hidden before submission!)
+            let feedbackHtml = '';
+            if (isQuizSubmitted) {
+                const correctObj = item.options.find(o => o.key === item.correctKey);
+                feedbackHtml = `
+                    <div class="mt-3 pt-2.5 border-t border-black/10 flex flex-wrap items-center justify-between gap-2" dir="rtl">
+                        <div class="text-xs md:text-sm font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}">
+                            ${isCorrect
+                                ? '✔️ إجابة صحيحة! أحسنت.'
+                                : `❌ الإجابة الصحيحة هي: <span class="en-text font-extrabold underline px-1">(${correctObj.key}) ${correctObj.text}</span>`
+                            }
+                        </div>
+                        <button
+                            type="button"
+                            onclick="speakEnglishText('${item.fullSentence.replace(/'/g, "\\'")}', this)"
+                            class="bg-white hover:bg-amber-50 text-gray-800 border border-gray-300 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition"
+                        >
+                            <span>🔊</span>
+                            <span>استمع للجملة</span>
+                        </button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="flex items-center gap-3 mb-3.5 bg-[#faecc4]/60 px-3.5 py-2 rounded-xl border border-amber-200/70">
+                    <span class="w-8 h-8 rounded-full bg-[#d95f18] text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs en-text">
+                        ${item.id}
+                    </span>
+                    <p class="text-base md:text-lg font-bold text-gray-900 en-text leading-relaxed">
+                        ${item.promptBefore}${blankDisplay}${item.promptAfter}
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-4 pl-2 md:pl-11 items-center">
+                    ${optionsHtml}
+                </div>
+                ${feedbackHtml}
+            `;
+        }
+
+        function renderQ2() {
+            const container = document.getElementById('q2Container');
+            container.innerHTML = '';
+
+            q2Data.forEach(item => {
+                const chosen = userQ2Answers[item.id];
+                const isCorrect = isQuizSubmitted && chosen === item.correctKey;
+
+                const row = document.createElement('div');
+                row.id = `q2_row_${item.id}`;
+                row.className = `rounded-2xl p-4 transition border ${
+                    !isQuizSubmitted
+                        ? 'bg-[#fdf5dc]/80 border-amber-200/90 shadow-2xs'
+                        : isCorrect
+                        ? 'bg-emerald-50 border-emerald-300'
+                        : 'bg-red-50 border-red-300'
+                }`;
+
+                row.innerHTML = createQ2RowHTML(item, false);
+                container.appendChild(row);
+            });
+        }
+
+        function selectQ2Option(qId, optKey) {
+            if (isQuizSubmitted) return;
+            userQ2Answers[qId] = optKey;
+            lastAnimatedQ2Id = qId;
+
+            // Update ONLY the clicked question row so circles in #1 or other questions never move or re-animate!
+            const item = q2Data.find(x => x.id === qId);
+            const rowEl = document.getElementById(`q2_row_${qId}`);
+            if (rowEl && item) {
+                rowEl.innerHTML = createQ2RowHTML(item, true);
+            } else {
+                renderQ2();
+            }
+            updateProgressUI();
+        }
+
+        /* --------------------------------------------------------------
+           RENDER SECTION 3: Word Bank & Complete the Sentences
+           -------------------------------------------------------------- */
+        function renderWordBank() {
+            const bankEl = document.getElementById('wordBankContainer');
+            const usedWords = Object.values(userQ3Answers);
+
+            let html = `<span class="font-extrabold text-red-600 en-text mr-1 text-base md:text-lg">Word Bank :</span>`;
+
+            wordBankList.forEach((word, idx) => {
+                const isUsed = usedWords.includes(word);
+                const isSelected = selectedWordFromBank === word;
+
+                html += `
+                    <button
+                        type="button"
+                        ${isQuizSubmitted ? 'disabled' : `onclick="handleWordBankClick('${word}')"`}
+                        class="word-pill en-text font-bold text-sm md:text-base px-3.5 py-1.5 rounded-xl border-2 ${
+                            isSelected
+                                ? 'bg-orange-600 text-white border-orange-700 active-word'
+                                : isUsed
+                                ? 'bg-gray-100 text-gray-400 border-gray-300 used'
+                                : 'bg-[#f4fbe8] text-[#4b6722] border-[#6f8f3c] hover:bg-[#e7f5d0]'
+                        }"
+                    >
+                        ${word}
+                    </button>
+                    ${idx < wordBankList.length - 1 ? '<span class="text-[#6f8f3c] font-black select-none">•</span>' : ''}
+                `;
+            });
+
+            bankEl.innerHTML = html;
+        }
+
+        function handleWordBankClick(word) {
+            if (isQuizSubmitted) return;
+            // If this word is already placed in a blank, unassign it first so user can move it
+            for (const qId in userQ3Answers) {
+                if (userQ3Answers[qId] === word) {
+                    delete userQ3Answers[qId];
+                }
+            }
+            if (selectedWordFromBank === word) {
+                selectedWordFromBank = null;
+            } else {
+                selectedWordFromBank = word;
+            }
+            renderWordBank();
+            renderQ3();
+            updateProgressUI();
+        }
+
+        function renderQ3() {
+            const container = document.getElementById('q3Container');
+            container.innerHTML = '';
+
+            q3Data.forEach(item => {
+                const userWord = userQ3Answers[item.id] || '';
+                const isCorrect = isQuizSubmitted && userWord.toLowerCase() === item.correctWord.toLowerCase();
+
+                const row = document.createElement('div');
+                row.className = `rounded-2xl px-4 py-3.5 transition border flex flex-col gap-2 ${
+                    !isQuizSubmitted
+                        ? 'bg-[#fdf5dc] border-amber-200/90'
+                        : isCorrect
+                        ? 'bg-emerald-50 border-emerald-300'
+                        : 'bg-red-50 border-red-300'
+                }`;
+
+                let blankClasses = 'blank-slot en-text text-base md:text-lg ';
+                if (userWord) {
+                    blankClasses += 'filled ';
+                } else if (selectedWordFromBank && !isQuizSubmitted) {
+                    blankClasses += 'ring-2 ring-orange-400 bg-orange-50 animate-pulse ';
+                }
+                if (isQuizSubmitted) {
+                    blankClasses += 'locked cursor-default ';
+                }
+
+                let feedbackHtml = '';
+                if (isQuizSubmitted) {
+                    feedbackHtml = `
+                        <div class="pt-2 border-t border-black/10 flex flex-wrap items-center justify-between gap-2" dir="rtl">
+                            <div class="text-xs md:text-sm font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}">
+                                ${isCorrect
+                                    ? '✔️ إجابة صحيحة!'
+                                    : `❌ الكلمة الصحيحة: <span class="en-text font-extrabold underline px-1">${item.correctWord}</span>`
+                                }
+                            </div>
+                            <button
+                                type="button"
+                                onclick="speakEnglishText('${item.fullSentence.replace(/'/g, "\\'")}', this)"
+                                class="bg-white hover:bg-amber-50 text-gray-800 border border-gray-300 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition"
+                            >
+                                <span>🔊</span>
+                                <span>استمع للجملة</span>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                row.innerHTML = `
+                    <div class="flex items-center flex-wrap gap-2">
+                        <span class="w-8 h-8 rounded-full bg-[#d95f18] text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs en-text mr-1">
+                            ${item.id}
+                        </span>
+                        <span class="text-base md:text-lg font-bold text-gray-900 en-text">${item.before}</span>
+                        <button
+                            type="button"
+                            ${isQuizSubmitted ? 'disabled' : `onclick="handleBlankSlotClick(${item.id})"`}
+                            class="${blankClasses}"
+                            title="اضغط لوضع الكلمة أو تغييرها"
+                        >
+                            ${userWord ? userWord : '<span class="text-gray-400 text-xs font-normal">...................</span>'}
+                        </button>
+                        <span class="text-base md:text-lg font-bold text-gray-900 en-text">${item.after}</span>
+                    </div>
+                    ${feedbackHtml}
+                `;
+
+                container.appendChild(row);
+            });
+        }
+
+        function handleBlankSlotClick(qId) {
+            if (isQuizSubmitted) return;
+
+            // Case 1: User already clicked a word in the Word Bank -> place it directly
+            if (selectedWordFromBank) {
+                userQ3Answers[qId] = selectedWordFromBank;
+                selectedWordFromBank = null;
+                renderWordBank();
+                renderQ3();
+                updateProgressUI();
+                return;
+            }
+
+            // Case 2: Open quick picker modal to choose from Word Bank
+            openWordPickerModal(qId);
+        }
+
+        function openWordPickerModal(qId) {
+            currentModalBlankId = qId;
+            document.getElementById('pickerTargetNum').textContent = qId;
+            const listEl = document.getElementById('modalWordList');
+            const usedWords = Object.values(userQ3Answers);
+            const currentWordInSlot = userQ3Answers[qId];
+
+            listEl.innerHTML = wordBankList.map(word => {
+                const isUsedElsewhere = usedWords.includes(word) && currentWordInSlot !== word;
+                const isCurrent = currentWordInSlot === word;
+                return `
+                    <button
+                        type="button"
+                        onclick="selectWordFromModal('${word}')"
+                        class="en-text font-bold px-4 py-2 rounded-xl border-2 transition ${
+                            isCurrent
+                                ? 'bg-orange-600 text-white border-orange-700'
+                                : isUsedElsewhere
+                                ? 'bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200'
+                                : 'bg-[#f4fbe8] text-[#4b6722] border-[#6f8f3c] hover:bg-[#e2f2c4]'
+                        }"
+                    >
+                        ${word} ${isUsedElsewhere ? '(مستخدمة)' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            document.getElementById('wordPickerModal').classList.remove('hidden');
+        }
+
+        function selectWordFromModal(word) {
+            if (currentModalBlankId === null) return;
+            // Remove from any other blank if already used
+            for (const k in userQ3Answers) {
+                if (userQ3Answers[k] === word) {
+                    delete userQ3Answers[k];
+                }
+            }
+            userQ3Answers[currentModalBlankId] = word;
+            closeWordPickerModal();
+            renderWordBank();
+            renderQ3();
+            updateProgressUI();
+        }
+
+        function clearBlankFromModal() {
+            if (currentModalBlankId !== null) {
+                delete userQ3Answers[currentModalBlankId];
+            }
+            closeWordPickerModal();
+            renderWordBank();
+            renderQ3();
+            updateProgressUI();
+        }
+
+        function closeWordPickerModal() {
+            currentModalBlankId = null;
+            document.getElementById('wordPickerModal').classList.add('hidden');
+        }
+
+        /* --------------------------------------------------------------
+           RENDER SECTION 4: Complete the Missing Letters
+           -------------------------------------------------------------- */
+        function renderQ4() {
+            const container = document.getElementById('q4Container');
+            container.innerHTML = '';
+
+            q4Data.forEach(item => {
+                const userMap = userQ4Answers[item.id] || {};
+                const isItemCorrect = checkQ4ItemCorrect(item);
+                const isLongWord = item.pattern.length >= 8;
+
+                const card = document.createElement('div');
+                card.className = `rounded-3xl border-2 p-4 flex flex-col justify-between transition shadow-sm hover:shadow-md ${
+                    !isQuizSubmitted
+                        ? 'bg-white border-amber-300'
+                        : isItemCorrect
+                        ? 'bg-emerald-50/70 border-emerald-500'
+                        : 'bg-red-50/70 border-red-400'
+                }`;
+
+                // Build letter slots strictly on a single horizontal line without scrollbars
+                let patternHtml = '';
+                item.pattern.forEach((slot, idx) => {
+                    if (!slot.missing) {
+                        patternHtml += `<span class="letter-static">${slot.char}</span>`;
+                    } else {
+                        const val = userMap[idx] || '';
+                        const hasValClass = val ? 'has-value' : '';
+                        const slotCorrect = isQuizSubmitted && val.toLowerCase() === slot.char.toLowerCase();
+                        const slotWrong = isQuizSubmitted && !slotCorrect;
+
+                        let inputStyle = hasValClass;
+                        if (slotCorrect) inputStyle = '!border-emerald-600 !bg-emerald-100 !text-emerald-900';
+                        if (slotWrong) inputStyle = '!border-red-600 !bg-red-100 !text-red-800';
+
+                        patternHtml += `
+                            <input
+                                type="text"
+                                maxlength="1"
+                                id="q4_${item.id}_${idx}"
+                                value="${val}"
+                                ${isQuizSubmitted ? 'disabled' : ''}
+                                oninput="handleQ4LetterInput(${item.id}, ${idx}, this)"
+                                onkeydown="handleQ4KeyDown(event, ${item.id}, ${idx})"
+                                class="letter-input ${inputStyle}"
+                                autocomplete="off"
+                                aria-label="Missing letter"
+                            />
+                        `;
+                    }
+                });
+
+                let postSubmitFooter = '';
+                if (isQuizSubmitted) {
+                    postSubmitFooter = `
+                        <div class="mt-3.5 pt-2.5 border-t border-black/10 flex items-center justify-between gap-2" dir="rtl">
+                            <span class="text-xs font-extrabold flex items-center gap-1 ${isItemCorrect ? 'text-emerald-700' : 'text-red-700'}">
+                                ${isItemCorrect ? '✔️ صحيحة' : `❌ الصحيح: <span class="en-text underline font-black">${item.word}</span>`}
+                            </span>
+                            <button
+                                type="button"
+                                onclick="speakEnglishText('${item.word}', this)"
+                                class="bg-white hover:bg-amber-50 text-gray-800 border border-gray-300 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition"
+                            >
+                                <span class="en-text font-extrabold">${item.word}</span>
+                                <span>🔊</span>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Illustration frame -->
+                        <div class="bg-gradient-to-b from-amber-50/60 to-stone-50/90 rounded-2xl border border-amber-200/70 p-3 mb-3.5 flex items-center justify-center h-36">
+                            ${item.svg}
+                        </div>
+
+                        <!-- Number badge + Single-line Word Box (Matching worksheet layout) -->
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="w-8 h-9 rounded-xl text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs en-text"
+                                style="background-color: ${item.badgeColor}"
+                            >
+                                ${item.id}
+                            </span>
+                            <div class="flex-1 min-w-0 border-2 border-slate-700 rounded-2xl py-2.5 px-2 bg-white flex items-center justify-center flex-nowrap ${isLongWord ? 'word-long gap-0.5' : 'gap-1'}">
+                                ${patternHtml}
+                            </div>
+                        </div>
+                    </div>
+                    ${postSubmitFooter}
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function handleQ4LetterInput(itemId, charIdx, inputEl) {
+            if (isQuizSubmitted) return;
+            // Keep only English letters
+            const cleaned = inputEl.value.replace(/[^a-zA-Z]/g, '').toLowerCase();
+            inputEl.value = cleaned;
+            userQ4Answers[itemId][charIdx] = cleaned;
+
+            if (cleaned) {
+                inputEl.classList.add('has-value');
+            } else {
+                inputEl.classList.remove('has-value');
+            }
+
+            updateProgressUI();
+
+            // Auto-advance to the next missing letter input in the same card
+            if (cleaned.length === 1) {
+                const item = q4Data.find(x => x.id === itemId);
+                for (let nextIdx = charIdx + 1; nextIdx < item.pattern.length; nextIdx++) {
+                    if (item.pattern[nextIdx].missing) {
+                        const nextInput = document.getElementById(`q4_${itemId}_${nextIdx}`);
+                        if (nextInput) nextInput.focus();
+                        break;
+                    }
+                }
+            }
+        }
+
+        function handleQ4KeyDown(event, itemId, charIdx) {
+            if (isQuizSubmitted) return;
+            if (event.key === 'Backspace' && !event.target.value) {
+                const item = q4Data.find(x => x.id === itemId);
+                for (let prevIdx = charIdx - 1; prevIdx >= 0; prevIdx--) {
+                    if (item.pattern[prevIdx].missing) {
+                        const prevInput = document.getElementById(`q4_${itemId}_${prevIdx}`);
+                        if (prevInput) {
+                            prevInput.focus();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function isQ4ItemFilled(item) {
+            const map = userQ4Answers[item.id] || {};
+            return item.pattern.every((slot, idx) => !slot.missing || (map[idx] && map[idx].trim().length === 1));
+        }
+
+        function checkQ4ItemCorrect(item) {
+            const map = userQ4Answers[item.id] || {};
+            return item.pattern.every((slot, idx) => {
+                if (!slot.missing) return true;
+                return (map[idx] || '').toLowerCase() === slot.char.toLowerCase();
+            });
+        }
+
+        /* --------------------------------------------------------------
+           PROGRESS TRACKING & SUBMISSION
+           -------------------------------------------------------------- */
+        function getCompletionCount() {
+            const q2Count = Object.keys(userQ2Answers).length;
+            const q3Count = Object.keys(userQ3Answers).length;
+            const q4Count = q4Data.filter(item => isQ4ItemFilled(item)).length;
+            return q2Count + q3Count + q4Count;
+        }
+
+        function updateProgressUI() {
+            const completed = getCompletionCount();
+            const total = 23; // 8 + 8 + 7
+            const pct = Math.round((completed / total) * 100);
+            document.getElementById('progressCounter').textContent = `${completed} / ${total}`;
+            document.getElementById('progressBar').style.width = `${pct}%`;
+        }
+
+        function handleQuizSubmitClick() {
+            if (isQuizSubmitted) return;
+            const completed = getCompletionCount();
+            const total = 23;
+
+            if (completed < total) {
+                const remaining = total - completed;
+                document.getElementById('confirmModalText').textContent =
+                    `تبقى لديك (${remaining}) سؤال لم تكتمل إجابته بعد. هل تريد العودة لإكمالها أم اعتماد الاختبار وعرض لوحة الدرجات الآن؟`;
+                document.getElementById('confirmModal').classList.remove('hidden');
+            } else {
+                finalizeSubmission();
+            }
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function finalizeSubmission() {
+            closeConfirmModal();
+            isQuizSubmitted = true;
+            selectedWordFromBank = null;
+            clearInterval(timerInterval);
+
+            // Calculate scores
+            let q2Score = 0;
+            q2Data.forEach(item => {
+                if (userQ2Answers[item.id] === item.correctKey) q2Score++;
+            });
+
+            let q3Score = 0;
+            q3Data.forEach(item => {
+                if ((userQ3Answers[item.id] || '').toLowerCase() === item.correctWord.toLowerCase()) {
+                    q3Score++;
+                }
+            });
+
+            let q4Score = 0;
+            q4Data.forEach(item => {
+                if (checkQ4ItemCorrect(item)) q4Score++;
+            });
+
+            const totalScore = q2Score + q3Score + q4Score;
+            const maxScore = 23;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+
+            // Update Scoreboard UI
+            document.getElementById('totalScoreText').textContent = `${totalScore} / ${maxScore}`;
+            document.getElementById('percentageBadge').textContent = `${percentage}%`;
+            document.getElementById('q2ScoreText').textContent = `${q2Score} / 8`;
+            document.getElementById('q3ScoreText').textContent = `${q3Score} / 8`;
+            document.getElementById('q4ScoreText').textContent = `${q4Score} / 7`;
+
+            const emojiEl = document.getElementById('gradeEmoji');
+            const titleEl = document.getElementById('gradeTitle');
+            if (percentage >= 90) {
+                emojiEl.textContent = '🏆';
+                titleEl.textContent = 'ممتاز جداً! أداء رائع ومتقن (Excellent!)';
+            } else if (percentage >= 75) {
+                emojiEl.textContent = '🌟';
+                titleEl.textContent = 'جيد جداً! عمل مميز (Very Good!)';
+            } else if (percentage >= 50) {
+                emojiEl.textContent = '👍';
+                titleEl.textContent = 'جيد! راجع الإجابات الصحيحة بالأسفل (Good Job!)';
+            } else {
+                emojiEl.textContent = '💪';
+                titleEl.textContent = 'حاول مرة أخرى بعد الاستماع للإجابات الصحيحة!';
+            }
+
+            // Update Top Header Notice
+            document.getElementById('quizStatusNotice').innerHTML = `
+                <span>🔓</span>
+                <span class="text-emerald-700">تم حل الاختبار! يمكنك الآن الاستماع لقراءة الإجابات ومراجعة الدرجات</span>
+            `;
+
+            // Show Scoreboard and hide Submit Bar
+            document.getElementById('scoreboardSection').classList.remove('hidden');
+            document.getElementById('submitBar').classList.add('hidden');
+
+            // Re-render all sections to reveal correct answers & audio buttons
+            renderAllSections();
+
+            // Smooth scroll to Scoreboard
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            stopAllSpeech();
+            initQuizState();
+            document.getElementById('scoreboardSection').classList.add('hidden');
+            document.getElementById('submitBar').classList.remove('hidden');
+            document.getElementById('quizStatusNotice').innerHTML = `
+                <span>🔒</span>
+                <span>الإجابات والقراءة الصوتية مخفية حتى الانتهاء من حل الاختبار</span>
+            `;
+            renderAllSections();
+            startTimer();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==============================================================
+           TEXT-TO-SPEECH (ENABLED ONLY AFTER QUIZ IS SOLVED)
+           ============================================================== */
+        function speakEnglishText(text, btnElement) {
+            // Strict Guardrail: Never read answers aloud before the quiz is solved!
+            if (!isQuizSubmitted) return;
+
+            if (!('speechSynthesis' in window)) return;
+
+            stopAllSpeech();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+
+            if (btnElement) {
+                btnElement.classList.add('speaking-pulse', 'bg-emerald-100', 'border-emerald-500');
+            }
+
+            utterance.onend = () => {
+                if (btnElement) {
+                    btnElement.classList.remove('speaking-pulse', 'bg-emerald-100', 'border-emerald-500');
+                }
+            };
+
+            utterance.onerror = () => {
+                if (btnElement) {
+                    btnElement.classList.remove('speaking-pulse', 'bg-emerald-100', 'border-emerald-500');
+                }
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function readAllAnswersAloud() {
+            if (!isQuizSubmitted || !('speechSynthesis' in window)) return;
+
+            stopAllSpeech();
+            speechQueueActive = true;
+
+            const stopBtn = document.getElementById('stopSpeechBtn');
+            const readAllText = document.getElementById('readAllText');
+            stopBtn.classList.remove('hidden');
+            readAllText.textContent = 'جاري قراءة الإجابات...';
+
+            const linesToRead = [
+                "Question 2. Choose the correct answer.",
+                ...q2Data.map(item => `Number ${item.id}. ${item.fullSentence}`),
+                "Question 3. Complete the sentences.",
+                ...q3Data.map(item => `Number ${item.id}. ${item.fullSentence}`),
+                "Question 4. Complete the missing letters.",
+                ...q4Data.map(item => `Number ${item.id}. ${item.word}.`)
+            ];
+
+            let currentIndex = 0;
+
+            function speakNext() {
+                if (!speechQueueActive || currentIndex >= linesToRead.length) {
+                    stopAllSpeech();
+                    return;
+                }
+                const u = new SpeechSynthesisUtterance(linesToRead[currentIndex]);
+                u.lang = 'en-US';
+                u.rate = 0.9;
+                u.onend = () => {
+                    currentIndex++;
+                    if (speechQueueActive) {
+                        setTimeout(speakNext, 350);
+                    }
+                };
+                u.onerror = () => {
+                    stopAllSpeech();
+                };
+                window.speechSynthesis.speak(u);
+            }
+
+            speakNext();
+        }
+
+        function stopAllSpeech() {
+            speechQueueActive = false;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            const stopBtn = document.getElementById('stopSpeechBtn');
+            const readAllText = document.getElementById('readAllText');
+            if (stopBtn) stopBtn.classList.add('hidden');
+            if (readAllText) readAllText.textContent = 'قراءة جميع الإجابات الصحيحة';
+            document.querySelectorAll('.speaking-pulse').forEach(el => {
+                el.classList.remove('speaking-pulse', 'bg-emerald-100', 'border-emerald-500');
+            });
+        }
+    </script>
+</body>
+</html>
